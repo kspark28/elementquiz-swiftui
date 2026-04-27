@@ -1,92 +1,79 @@
-import UIKit
-import SwiftUI // Added to support the new UI paradigm
-
-// MARK: - LEGACY CODE (DO NOT CHANGE/DELETE)
-class ViewController: UIViewController {
-
-    @IBOutlet weak var imageView: UIImageView!
-    @IBOutlet weak var answerLabel: UILabel!
-    
-    let elementList = ["Carbon", "Gold", "Chlorine", "Sodium"]
-    
-    var currentElementIndex = 0
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        updateElement()
-    }
-    
-    func updateElement() {
-        let elementName = elementList[currentElementIndex]
-        let image = UIImage(named: elementName)
-        imageView.image = image
-        
-        answerLabel.text = "?"
-    }
-
-    @IBAction func showAnswer(_ sender: Any) {
-        answerLabel.text = elementList[currentElementIndex]
-    }
-    
-    @IBAction func next(_ sender: Any) {
-        currentElementIndex += 1
-        if currentElementIndex >= elementList.count {
-            currentElementIndex = 0
-        }
-        
-        updateElement()
-    }
-}
-
-// MARK: - NEW MODERN SwiftUI IMPLEMENTATION (ADDED)
-/* TEACHING NOTE FOR JUNIORS: 
-   Notice how the logic below mirrors the logic above, but replaces 
-   manual UI updates with automatic State bindings.
-*/
+import SwiftUI
 
 struct ElementQuizView: View {
-    // Mirroring the original data
+    // MARK: - State Properties
+    // In SwiftUI, we don't use @IBOutlet. Instead, we use @State. 
+    // When these values change, the UI re-renders automatically.
     let elementList = ["Carbon", "Gold", "Chlorine", "Sodium"]
     
-    // State replaces the manual @IBOutlet updates
     @State private var currentElementIndex = 0
     @State private var isAnswerVisible = false
+    
+    // MARK: - Computed Properties
+    private var currentElementName: String {
+        elementList[currentElementIndex]
+    }
     
     var body: some View {
         VStack(spacing: 40) {
             Text("Element Quiz")
-                .font(.largeTitle.bold())
+                .font(.largeTitle)
+                .fontWeight(.black)
             
-            // Replaces: imageView logic
-            Image(elementList[currentElementIndex])
+            // Image View Replacement
+            // We use the element name directly to fetch the image
+            Image(currentElementName)
                 .resizable()
-                .scaledToFit()
-                .frame(width: 200, height: 200)
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 140, height: 140)
+                .cornerRadius(12)
+                .shadow(radius: 5)
             
-            // Replaces: answerLabel.text logic
-            Text(isAnswerVisible ? elementList[currentElementIndex] : "?")
-                .font(.title)
+            // Answer Label Replacement
+            // Instead of manually setting .text, we use a conditional expression
+            Text(isAnswerVisible ? currentElementName : "?")
+                .font(.system(size: 24, weight: .bold))
+                .foregroundColor(.primary)
             
-            HStack {
-                // Replaces: @IBAction showAnswer
-                Button("Show Answer") {
-                    isAnswerVisible = true
+            HStack(spacing: 30) {
+                // Show Answer Button
+                Button(action: showAnswer) {
+                    Text("Show Answer")
+                        .font(.headline)
+                        .padding()
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
                 }
-                .buttonStyle(.borderedProminent)
                 
-                // Replaces: @IBAction next
-                Button("Next Element") {
-                    isAnswerVisible = false
-                    currentElementIndex = (currentElementIndex + 1) % elementList.count
+                // Next Element Button
+                Button(action: nextElement) {
+                    Text("Next Element")
+                        .font(.headline)
+                        .padding()
+                        .background(Color.green)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
                 }
-                .buttonStyle(.bordered)
             }
         }
         .padding()
     }
+    
+    // MARK: - Logic Methods
+    // These replace the @IBActions from the old ViewController
+    
+    func showAnswer() {
+        isAnswerVisible = true
+    }
+    
+    func nextElement() {
+        isAnswerVisible = false // Reset answer visibility for the next item
+        currentElementIndex = (currentElementIndex + 1) % elementList.count
+    }
 }
 
-// MARK: - PREVIEW (ADDED)
+// MARK: - Preview
 struct ElementQuizView_Previews: PreviewProvider {
     static var previews: some View {
         ElementQuizView()
